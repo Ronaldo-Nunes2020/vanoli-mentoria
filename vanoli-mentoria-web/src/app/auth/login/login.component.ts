@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule  } from '@angular/forms';
 import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,8 +17,9 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
 
   loginForm!: FormGroup;
+  errorMessage: string | null = null
 
-  constructor(private authService: AuthService, private fb: FormBuilder) {
+  constructor(private authService: AuthService, private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
@@ -29,10 +31,10 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe(
         response => {
           console.log('Login bem-sucedido', response);
-          // Aqui, redirecione ou guarde o token de autenticação conforme necessário
+          this.router.navigate(['/dashboard']);  // Redireciona para a página de dashboard
         },
         error => {
-          console.error('Erro de login', error)
+          this.authService.showMessage('Erro de login: verifique suas credenciais.');
         }
       );
     }

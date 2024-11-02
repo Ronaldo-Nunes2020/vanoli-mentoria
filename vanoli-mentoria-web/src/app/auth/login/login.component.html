@@ -3,14 +3,18 @@
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
     <input matInput formControlName="email" type="email" placeholder="Digite seu email" required>
+    <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email é obrigatório</mat-error>
+    <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Email inválido</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Senha</mat-label>
     <input matInput formControlName="password" type="password" placeholder="Digite sua senha" required>
+    <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Senha é obrigatória</mat-error>
   </mat-form-field>
 
-  <button mat-raised-button color="primary" type="submit">Entrar</button>
+  <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">Entrar</button>
+  <p *ngIf="errorMessage" class="error-message">{{errorMessage}}</p>
 </form>
 
 

@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -15,8 +16,9 @@ import { AuthService } from '../auth.service';
 })
 export class RegisterComponent {
   registerForm!: FormGroup;
+  errorMessage: string | null = null;
 
-  constructor(private authService: AuthService, private fb: FormBuilder) {
+  constructor(private authService: AuthService, private fb: FormBuilder, private router: Router) {
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -29,10 +31,11 @@ export class RegisterComponent {
       this.authService.register(this.registerForm.value).subscribe(
         response => {
           console.log('Registro bem-sucedido:', response);
+          this.router.navigate(['/Welcome']) // Redireciona para uma página de boas-vindas ou dashboard
 
         },
         error => {
-          console.log('Erro de registro:', error);
+          this.authService.showMessage('Erro de registro: tente novamente.');
         }
       );
     }
