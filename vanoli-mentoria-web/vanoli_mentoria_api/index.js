@@ -63,12 +63,41 @@ app.post('/register', async (req, res) => {
   
       // Gerar um token JWT
       const token = jwt.sign({ id: user.id, role: user.role_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  
-      res.json({ message: 'Login bem-sucedido!', token });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Erro ao realizar o login' });
-    }
+
+     // Retornar o token e informações do usuário (sem a senha)
+     res.json({
+      message: 'Login bem-sucedido!',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role_id: user.role_id
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao realizar o login:", error);
+    res.status(500).json({ message: 'Erro ao realizar o login' });
+  }
   });
+
+  const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+  
+    if (!token) return res.status(401).json({ message: 'Token de autenticação não fornecido' });
+  
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) return res.status(403).json({ message: 'Token inválido' });
+      req.user = user; // Armazena as informações do usuário no request
+      next();
+    });
+  };
+
+  app.get('/dashboard', authenticateToken, (req, res) => {
+    res.json({ message: `Bem-vindo ao dashboard, ${req.user.id}!` });
+  });
+  
+  
   
   
