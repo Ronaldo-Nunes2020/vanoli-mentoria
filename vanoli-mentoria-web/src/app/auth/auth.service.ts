@@ -8,7 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class AuthService {
 
-  private apiUrl = 'https://sua-api.com/auth';  // Substitua pela URL da sua API
+  private apiUrl = 'http://localhost:5000';  // Substitua pela URL da sua API
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) {}
 

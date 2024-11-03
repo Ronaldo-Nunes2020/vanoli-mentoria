@@ -31,6 +31,10 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe(
         response => {
           console.log('Login bem-sucedido', response);
+
+          // Armazena o token no localStorage
+          localStorage.setItem('token', response.token);
+          
           this.router.navigate(['/dashboard']);  // Redireciona para a página de dashboard
         },
         error => {

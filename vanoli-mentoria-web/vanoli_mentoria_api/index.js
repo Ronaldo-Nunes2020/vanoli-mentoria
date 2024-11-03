@@ -17,6 +17,10 @@ const pool = new pg.Pool({
 
 app.use(express.json());
 
+const cors = require('cors');
+  app.use(cors());
+  
+
 app.listen(process.env.PORT, () => {
   console.log(`Servidor rodando na porta ${process.env.PORT}`);
 });
@@ -81,22 +85,56 @@ app.post('/register', async (req, res) => {
   }
   });
 
-  const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+  const authenticateToken = (allowedRoles = []) => {
+    return (req, res, next) => {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
   
-    if (!token) return res.status(401).json({ message: 'Token de autenticação não fornecido' });
+      if (!token) return res.status(401).json({ message: 'Token de autenticação não fornecido' });
   
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) return res.status(403).json({ message: 'Token inválido' });
-      req.user = user; // Armazena as informações do usuário no request
-      next();
-    });
+      jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Token inválido' });
+        
+        // Verifica se o papel do usuário está na lista de papéis permitidos
+        if (allowedRoles.length && !allowedRoles.includes(user.role)) {
+          return res.status(403).json({ message: 'Acesso negado' });
+        }
+  
+        req.user = user;
+        next();
+      });
+    };
   };
-
-  app.get('/dashboard', authenticateToken, (req, res) => {
-    res.json({ message: `Bem-vindo ao dashboard, ${req.user.id}!` });
+  
+  app.get('/conteudos', authenticateToken([2]), (req, res) => {
+    res.json({ message: 'Bem-vindo ao gerenciador de conteúdo, professor!' });
   });
+  
+
+  app.get('/cursos', authenticateToken([1]), (req, res) => {
+    res.json({ message: 'Bem-vindo à página de cursos, aluno!' });
+  });
+  
+  app.get('/dashboard', authenticateToken(), (req, res) => {
+    if (req.user.role === 1) { // Aluno
+      res.json({
+        message: 'Bem-vindo ao dashboard do aluno!',
+        cursos: ['Curso de Inglês', 'Curso de Espanhol', 'Curso de Francês'],
+        notificacoes: ['Próxima aula na segunda-feira', 'Envio de tarefas pendente']
+      });
+    } else if (req.user.role === 2) { // Professor
+      res.json({
+        message: 'Bem-vindo ao dashboard do professor!',
+        acoes: ['Criar novo curso', 'Gerenciar turmas', 'Ver avaliações'],
+        tarefas: ['Avaliar provas de inglês', 'Preparar conteúdo de espanhol']
+      });
+    } else {
+      res.status(403).json({ message: 'Acesso negado' });
+    }
+  });
+
+
+  
   
   
   
